@@ -136,6 +136,26 @@ defmodule TrinityCoordinator.RuntimeProfile do
     }
   end
 
+  # Validation-pass-only profile (Emily 0.4.0). Mirrors the :emlx lane's
+  # intent (Apple Silicon, no CUDA, full Qwen runtime, exporter on) but
+  # routes through Emily.Backend instead of EMLX.Backend.
+  def resolve(:emily) do
+    %__MODULE__{
+      name: :emily,
+      nx_backend: Emily.Backend,
+      require_cuda?: false,
+      qwen_runtime?: true,
+      export_svd?: true,
+      large_svd?: false,
+      artifact_runtime?: true,
+      default_slm_profile: :qwen_coordinator,
+      notes: [
+        "Apple Silicon profile via Emily 0.4.0. Validation-only; the canonical ",
+        "Apple lane is :emlx. See guides/runtime_profiles.md."
+      ]
+    }
+  end
+
   def resolve({:custom, backend, opts}) when is_atom(backend) and is_list(opts) do
     %__MODULE__{
       name: :custom,
@@ -155,7 +175,7 @@ defmodule TrinityCoordinator.RuntimeProfile do
   Returns the list of built-in profile names.
   """
   @spec builtin_names() :: [atom()]
-  def builtin_names, do: [:cuda_exla, :host_exla, :binary, :mock_tiny, :emlx]
+  def builtin_names, do: [:cuda_exla, :host_exla, :binary, :mock_tiny, :emlx, :emily]
 
   @doc """
   Sets the current process default Nx backend to the profile's backend.

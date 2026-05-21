@@ -114,6 +114,11 @@ defmodule TrinityCoordinator.MixProject do
       # application's deps; the :emlx runtime profile then resolves to
       # the EMLX.Backend at runtime via Code.ensure_loaded?/1. See
       # guides/runtime_profiles.md.
+      # VALIDATION ONLY: Emily 0.4.0 pulled in via the feature branch so
+      # this BEAM can run the export + prompt eval on Apple Silicon.
+      # Same optional/load-only pattern as EMLX above; do NOT carry this
+      # line back to main.
+      {:emily, "~> 0.4", only: [:dev, :test]},
       DependencySources.dep(:inference, __DIR__),
       DependencySources.dep(:agent_session_manager, __DIR__),
       DependencySources.dep(:gemini_cli_sdk, __DIR__),
