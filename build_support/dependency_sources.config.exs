@@ -34,6 +34,13 @@
       hex: "~> 0.1.0",
       default_order: [:path, :github, :hex],
       publish_order: [:hex]
+    },
+    crucible_tensor_patch: %{
+      path: "../../North-Shore-AI/crucible_tensor_patch",
+      github: %{repo: "North-Shore-AI/crucible_tensor_patch", branch: "main"},
+      hex: "~> 0.1.0",
+      default_order: [:path, :github, :hex],
+      publish_order: [:hex]
     }
   }
 }

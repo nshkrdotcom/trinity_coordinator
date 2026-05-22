@@ -116,6 +116,7 @@ defmodule TrinityCoordinator.MixProject do
       # guides/runtime_profiles.md.
       DependencySources.dep(:crucible_safetensors, __DIR__),
       DependencySources.dep(:crucible_factorization, __DIR__),
+      DependencySources.dep(:crucible_tensor_patch, __DIR__),
       DependencySources.dep(:inference, __DIR__),
       DependencySources.dep(:agent_session_manager, __DIR__),
       DependencySources.dep(:gemini_cli_sdk, __DIR__),
