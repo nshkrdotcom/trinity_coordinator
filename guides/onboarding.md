@@ -85,7 +85,7 @@ XLA_TARGET=cuda12 mix test
 Expected current result:
 
 ```text
-1 doctest, 214 tests, 0 failures (24 excluded)
+1 doctest, 302 tests, 0 failures (24 excluded)
 ```
 
 Run the pre-flight environment validator before any other Mix task:
@@ -125,7 +125,7 @@ The router and exporter both accept a `--runtime-profile` flag. The
 default `:cuda_exla` profile works for the existing Linux/CUDA path.
 For Apple Silicon, add `{:emlx, "~> 0.3"}` to your parent app and use
 `--runtime-profile emlx`. For CPU-only sanity checks, use
-`--runtime-profile cpu_binary`. See [Runtime Profiles](runtime_profiles.md)
+`--runtime-profile binary`. See [Runtime Profiles](runtime_profiles.md)
 for the full menu.
 
 Run the static quality gates:

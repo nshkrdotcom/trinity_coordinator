@@ -12,7 +12,7 @@ XLA_TARGET=cuda12 mix test
 Current expected result (post Phase 11, 2026-05-20):
 
 ```text
-1 doctest, 214 tests, 0 failures (24 excluded)
+1 doctest, 302 tests, 0 failures (24 excluded)
 ```
 
 The excluded tests include slow Qwen/SVD gates and expensive artifact export

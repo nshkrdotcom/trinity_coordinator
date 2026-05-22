@@ -154,7 +154,7 @@ against the CUDA snapshot. `route_hash` will drift on every case for
 both lanes — that's expected on a different kernel stack and is exactly
 what the per-profile snapshot fixture lane below is designed for.
 
-### `:cpu_binary`
+### `:binary`
 
 Pure-Elixir CPU fallback. Useful for unit tests and for quick
 sanity-checks on machines without any GPU.
@@ -230,7 +230,7 @@ that pre-date the profile system; they remain supported.
 | NVIDIA GPU + CUDA-12 toolchain + Linux | `:cuda_exla` (default) |
 | Apple Silicon (M-series), production-shaped | `:emlx` + add `{:emlx, "~> 0.3"}` to your deps |
 | Apple Silicon (M-series), research / Emily MLX | `:emily` + add `{:emily, "~> 0.4"}` to your deps |
-| No GPU; want to run unit tests / quick sanity checks | `:cpu_binary` |
+| No GPU; want to run unit tests / quick sanity checks | `:binary` |
 | Some other backend (e.g. Torchx, custom NIF) | `{:custom, BackendMod, opts}` |
 
 ## Verifying A Profile

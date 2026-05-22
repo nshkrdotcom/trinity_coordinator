@@ -11,9 +11,16 @@ Prerequisites:
   `priv/sakana_trinity/adapted_qwen3_0_6b_layer26`;
 - a CUDA device capable of loading Qwen3-0.6B through EXLA.
 
-If the artifact directory is missing, run the Python semantic export and
-`mix trinity.sakana.import_python` workflow documented in
-`guides/artifacts_and_export.md`.
+If the artifact directory is missing, fetch the published bundle first:
+
+```bash
+mix trinity.artifact.fetch
+```
+
+That downloads the SHA-pinned 624 MB bundle from the project's
+HuggingFace dataset repo. Rebuild the bundle yourself only when you want
+to validate or modify the export pipeline; that heavier path is documented
+in `guides/artifacts_and_export.md`.
 
 The examples use the promoted default artifact path. Pass `--artifact-dir` only
 when intentionally checking another artifact bundle.
