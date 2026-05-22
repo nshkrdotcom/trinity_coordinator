@@ -114,6 +114,7 @@ defmodule TrinityCoordinator.MixProject do
       # application's deps; the :emlx runtime profile then resolves to
       # the EMLX.Backend at runtime via Code.ensure_loaded?/1. See
       # guides/runtime_profiles.md.
+      DependencySources.dep(:crucible_safetensors, __DIR__),
       DependencySources.dep(:inference, __DIR__),
       DependencySources.dep(:agent_session_manager, __DIR__),
       DependencySources.dep(:gemini_cli_sdk, __DIR__),
