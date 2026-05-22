@@ -27,6 +27,13 @@
       hex: "~> 0.1.0",
       default_order: [:path, :github, :hex],
       publish_order: [:hex]
+    },
+    crucible_factorization: %{
+      path: "../../North-Shore-AI/crucible_factorization",
+      github: %{repo: "North-Shore-AI/crucible_factorization", branch: "main"},
+      hex: "~> 0.1.0",
+      default_order: [:path, :github, :hex],
+      publish_order: [:hex]
     }
   }
 }
