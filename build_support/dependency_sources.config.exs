@@ -41,6 +41,13 @@
       hex: "~> 0.1.0",
       default_order: [:path, :github, :hex],
       publish_order: [:hex]
+    },
+    crucible_model_registry: %{
+      path: "../../North-Shore-AI/crucible_model_registry",
+      github: %{repo: "North-Shore-AI/crucible_model_registry", branch: "main"},
+      hex: "~> 0.3.1",
+      default_order: [:path, :github, :hex],
+      publish_order: [:hex]
     }
   }
 }

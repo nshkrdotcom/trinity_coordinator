@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Trinity.Artifact.FetchTest do
   end
 
   test "prints --help and returns :ok without invoking the downloader", %{tmp: tmp} do
-    pin_path = write_synthetic_pin!(tmp, ["manifest.json"])
+    pin_path = write_synthetic_pin!(tmp, [{"manifest.json", ""}])
 
     parent = self()
 
@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Trinity.Artifact.FetchTest do
   end
 
   test "fetches into the given --dest using the injected downloader", %{tmp: tmp} do
-    pin_path = write_synthetic_pin!(tmp, ["manifest.json"])
+    pin_path = write_synthetic_pin!(tmp, [{"manifest.json", "manifest-bytes"}])
     cache = Path.join(tmp, "cache")
     File.mkdir_p!(cache)
     File.write!(Path.join(cache, "manifest.json"), "manifest-bytes")
@@ -55,7 +55,7 @@ defmodule Mix.Tasks.Trinity.Artifact.FetchTest do
   end
 
   test "--offline forwards offline_mode through to the downloader", %{tmp: tmp} do
-    pin_path = write_synthetic_pin!(tmp, ["manifest.json"])
+    pin_path = write_synthetic_pin!(tmp, [{"manifest.json", "x"}])
     cache = Path.join(tmp, "cache")
     File.mkdir_p!(cache)
     File.write!(Path.join(cache, "manifest.json"), "x")
@@ -113,7 +113,7 @@ defmodule Mix.Tasks.Trinity.Artifact.FetchTest do
 
     refute :hf_hub in Enum.map(Application.started_applications(), &elem(&1, 0))
 
-    pin_path = write_synthetic_pin!(tmp, ["manifest.json"])
+    pin_path = write_synthetic_pin!(tmp, [{"manifest.json", "manifest-bytes"}])
     cache = Path.join(tmp, "cache")
     File.mkdir_p!(cache)
     File.write!(Path.join(cache, "manifest.json"), "manifest-bytes")
@@ -128,22 +128,51 @@ defmodule Mix.Tasks.Trinity.Artifact.FetchTest do
            "trinity.artifact.fetch must start the application tree so Finch/Req are available"
   end
 
-  defp write_synthetic_pin!(tmp, file_paths, opts \\ []) do
+  defp write_synthetic_pin!(tmp, files, opts \\ []) do
     pin_path = Path.join(tmp, "pin.json")
+    shas = Keyword.get(opts, :shas, %{})
+    paths = Enum.map(files, &file_path/1)
 
     pin =
       %Pin{
         version: 1,
         repo_id: Keyword.get(opts, :repo_id, "owner/repo"),
         revision: Keyword.get(opts, :revision, "v1"),
-        manifest_sha256: "deadbeef",
-        files: Enum.map(file_paths, fn p -> %{path: p, sha256: "aa"} end)
+        manifest_sha256: manifest_sha(paths, files, shas),
+        files:
+          Enum.map(files, fn file ->
+            path = file_path(file)
+            %{path: path, sha256: Map.get(shas, path, file_sha(file))}
+          end)
       }
       |> Map.from_struct()
       |> Jason.encode!()
 
     File.write!(pin_path, pin)
     pin_path
+  end
+
+  defp manifest_sha(paths, files, shas) do
+    cond do
+      Map.has_key?(shas, "manifest.json") ->
+        Map.fetch!(shas, "manifest.json")
+
+      "manifest.json" in paths ->
+        files |> Enum.find(&(file_path(&1) == "manifest.json")) |> file_sha()
+
+      true ->
+        sha256("")
+    end
+  end
+
+  defp file_path({path, _content}), do: path
+  defp file_path(path) when is_binary(path), do: path
+
+  defp file_sha({_path, content}), do: sha256(content)
+  defp file_sha(path) when is_binary(path), do: sha256(path)
+
+  defp sha256(binary) do
+    :crypto.hash(:sha256, binary) |> Base.encode16(case: :lower)
   end
 
   defp unique_tmp_dir do

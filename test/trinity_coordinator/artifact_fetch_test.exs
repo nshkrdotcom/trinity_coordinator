@@ -16,27 +16,30 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
   describe "Pin.load_pin!/1" do
     test "returns a Pin struct with repo_id, revision, files", %{tmp: tmp} do
       pin_path = Path.join(tmp, "pin.json")
+      manifest_sha = sha256("manifest-bytes")
+      router_sha = sha256("router-head-bytes")
 
-      File.write!(pin_path, """
-      {
-        "version": 1,
-        "repo_id": "owner/repo",
-        "revision": "v1.2.3",
-        "manifest_sha256": "abc123",
-        "files": [
-          {"path": "manifest.json", "sha256": "aa"},
-          {"path": "router_head.safetensors", "sha256": "bb"}
-        ]
-      }
-      """)
+      File.write!(
+        pin_path,
+        Jason.encode!(%{
+          version: 1,
+          repo_id: "owner/repo",
+          revision: "v1.2.3",
+          manifest_sha256: manifest_sha,
+          files: [
+            %{path: "manifest.json", sha256: manifest_sha},
+            %{path: "router_head.safetensors", sha256: router_sha}
+          ]
+        })
+      )
 
       pin = Pin.load_pin!(pin_path)
       assert pin.repo_id == "owner/repo"
       assert pin.revision == "v1.2.3"
-      assert pin.manifest_sha256 == "abc123"
+      assert pin.manifest_sha256 == manifest_sha
       assert length(pin.files) == 2
       assert hd(pin.files).path == "manifest.json"
-      assert hd(pin.files).sha256 == "aa"
+      assert hd(pin.files).sha256 == manifest_sha
     end
 
     test "raises a descriptive error on schema violations", %{tmp: tmp} do
@@ -71,14 +74,16 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
 
   describe "fetch!/3 with injected downloader" do
     test "downloads each pin file via the injected downloader", %{tmp: tmp} do
-      pin = synthetic_pin(["manifest.json", "router_head.safetensors"])
+      files = [
+        {"manifest.json", "manifest-bytes"},
+        {"router_head.safetensors", "router-head-bytes"}
+      ]
+
+      pin = synthetic_pin(files)
       dest = Path.join(tmp, "bundle")
       cache = Path.join(tmp, "cache")
 
-      seed_cache_files(cache, [
-        {"manifest.json", "manifest-bytes"},
-        {"router_head.safetensors", "router-head-bytes"}
-      ])
+      seed_cache_files(cache, files)
 
       downloader = stub_downloader_ok(cache)
 
@@ -89,11 +94,12 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
     end
 
     test "creates nested directories for files under checkpoints/", %{tmp: tmp} do
-      pin = synthetic_pin(["checkpoints/foo.safetensors"])
+      files = [{"checkpoints/foo.safetensors", "foo-bytes"}]
+      pin = synthetic_pin(files)
       dest = Path.join(tmp, "bundle")
       cache = Path.join(tmp, "cache")
 
-      seed_cache_files(cache, [{"checkpoints/foo.safetensors", "foo-bytes"}])
+      seed_cache_files(cache, files)
 
       downloader = stub_downloader_ok(cache)
 
@@ -132,10 +138,11 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
 
     test "honours offline_mode by passing through to the downloader options",
          %{tmp: tmp} do
-      pin = synthetic_pin(["manifest.json"])
       dest = Path.join(tmp, "bundle")
       cache = Path.join(tmp, "cache")
-      seed_cache_files(cache, [{"manifest.json", "manifest-bytes"}])
+      files = [{"manifest.json", "manifest-bytes"}]
+      pin = synthetic_pin(files)
+      seed_cache_files(cache, files)
 
       received_opts = self()
 
@@ -157,10 +164,17 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
 
     test "forwards repo_id and revision from the pin to the downloader",
          %{tmp: tmp} do
-      pin = synthetic_pin(["manifest.json"], repo_id: "owner/repo", revision: "v9.9.9")
+      files = [{"manifest.json", "manifest-bytes"}]
+
+      pin =
+        synthetic_pin(files,
+          repo_id: "owner/repo",
+          revision: "v9.9.9"
+        )
+
       dest = Path.join(tmp, "bundle")
       cache = Path.join(tmp, "cache")
-      seed_cache_files(cache, [{"manifest.json", "manifest-bytes"}])
+      seed_cache_files(cache, files)
 
       parent = self()
 
@@ -195,8 +209,9 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
 
   # ───────────── helpers ─────────────
 
-  defp synthetic_pin(file_paths, opts \\ []) do
+  defp synthetic_pin(files, opts \\ []) do
     shas = Keyword.get(opts, :shas, %{})
+    paths = Enum.map(files, &file_path/1)
 
     %Pin{
       version: 1,
@@ -204,11 +219,39 @@ defmodule TrinityCoordinator.ArtifactFetchTest do
       revision: Keyword.get(opts, :revision, "v1"),
       manifest_sha256: Map.get(shas, "manifest.json", "deadbeef"),
       files:
-        Enum.map(file_paths, fn p ->
-          %{path: p, sha256: Map.get(shas, p, "aa")}
+        Enum.map(files, fn file ->
+          path = file_path(file)
+
+          %{
+            path: path,
+            sha256: Map.get(shas, path, file_sha(file))
+          }
         end)
     }
+    |> maybe_put_manifest_sha(paths, shas)
   end
+
+  defp maybe_put_manifest_sha(%Pin{} = pin, paths, shas) do
+    manifest_sha =
+      cond do
+        Map.has_key?(shas, "manifest.json") ->
+          Map.fetch!(shas, "manifest.json")
+
+        "manifest.json" in paths ->
+          pin.files |> Enum.find(&(&1.path == "manifest.json")) |> Map.fetch!(:sha256)
+
+        true ->
+          sha256("")
+      end
+
+    %{pin | manifest_sha256: manifest_sha}
+  end
+
+  defp file_path({path, _content}), do: path
+  defp file_path(path) when is_binary(path), do: path
+
+  defp file_sha({_path, content}), do: sha256(content)
+  defp file_sha(path) when is_binary(path), do: sha256(path)
 
   defp seed_cache_files(cache_root, files) do
     File.mkdir_p!(cache_root)

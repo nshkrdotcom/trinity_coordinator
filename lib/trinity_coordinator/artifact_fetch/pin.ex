@@ -1,19 +1,13 @@
 defmodule TrinityCoordinator.ArtifactFetch.Pin do
   @moduledoc """
-  Pinned descriptor for the project's adapted-artifact bundle.
+  Compatibility wrapper for the TRINITY artifact pin descriptor.
 
-  The pin file is committed to the repo. It carries:
-
-    * `:repo_id` — HuggingFace dataset repo holding the bundle
-    * `:revision` — the bundle revision (tag, branch, or sha)
-    * `:manifest_sha256` — sha256 of the bundle's own `manifest.json`,
-      so the pin and the manifest cannot silently disagree
-    * `:files` — list of `%{path: rel_path, sha256: hex}` entries,
-      one per file in the bundle
-
-  The pin is regenerated from the bundle's manifest with
-  `build_support/build_artifact_pin.exs`.
+  The strict pin parser and verifier now live in
+  `CrucibleModelRegistry.Pins.ArtifactPin`. This module preserves the
+  coordinator's historical struct shape for one release window.
   """
+
+  alias CrucibleModelRegistry.Pins.{ArtifactPin, RequiredFile}
 
   @enforce_keys [:version, :repo_id, :revision, :manifest_sha256, :files]
   defstruct [:version, :repo_id, :revision, :manifest_sha256, :files]
@@ -27,50 +21,38 @@ defmodule TrinityCoordinator.ArtifactFetch.Pin do
           files: [entry()]
         }
 
-  @supported_version 1
-
-  @required_keys ~w(version repo_id revision files)
-
-  @doc """
-  Loads a pin descriptor from a JSON file on disk.
-
-  Raises:
-
-    * `File.Error` — pin file does not exist
-    * `ArgumentError` — pin file is missing a required key or carries an
-      unsupported `:version`
-  """
+  @doc "Loads a pin descriptor from disk."
   @spec load_pin!(Path.t()) :: t()
   def load_pin!(path) do
-    raw = File.read!(path)
-    decoded = Jason.decode!(raw)
+    path
+    |> ArtifactPin.load!()
+    |> from_registry_pin()
+  end
 
-    Enum.each(@required_keys, fn k ->
-      unless Map.has_key?(decoded, k) do
-        raise ArgumentError,
-              "trinity.artifact pin #{inspect(path)} missing required key #{inspect(k)}"
-      end
-    end)
-
-    version = Map.fetch!(decoded, "version")
-
-    unless version == @supported_version do
-      raise ArgumentError,
-            "trinity.artifact pin #{inspect(path)} carries unsupported pin version " <>
-              inspect(version) <> "; this codebase understands version #{@supported_version}"
-    end
-
-    files =
-      Enum.map(Map.fetch!(decoded, "files"), fn %{"path" => p, "sha256" => s} ->
-        %{path: p, sha256: s}
-      end)
-
+  @doc false
+  @spec from_registry_pin(ArtifactPin.t()) :: t()
+  def from_registry_pin(%ArtifactPin{} = pin) do
     %__MODULE__{
-      version: version,
-      repo_id: Map.fetch!(decoded, "repo_id"),
-      revision: Map.fetch!(decoded, "revision"),
-      manifest_sha256: Map.get(decoded, "manifest_sha256", ""),
-      files: files
+      version: pin.version,
+      repo_id: pin.repo_id,
+      revision: pin.revision,
+      manifest_sha256: pin.manifest_sha256,
+      files: Enum.map(pin.files, &from_required_file/1)
     }
   end
+
+  @doc false
+  @spec to_registry_pin(t()) :: ArtifactPin.t()
+  def to_registry_pin(%__MODULE__{} = pin) do
+    ArtifactPin.new!(%{
+      version: pin.version,
+      repo_id: pin.repo_id,
+      revision: pin.revision,
+      manifest_sha256: pin.manifest_sha256,
+      files: pin.files
+    })
+  end
+
+  defp from_required_file(%RequiredFile{} = file),
+    do: %{path: file.path, sha256: file.sha256}
 end
