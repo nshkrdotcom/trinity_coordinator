@@ -1,25 +1,15 @@
 defmodule Mix.Tasks.Trinity.Demo do
   @moduledoc """
-  Compatibility wrapper for the active adapted-coordinator route demo.
-
-      XLA_TARGET=cuda12 mix trinity.demo --mock-provider
-
-  `--mock` is preserved as an alias of `--mock-provider`; either spelling is
-  accepted in tasks that delegate here.
-
-  The old `trinity.demo` task trained a supervised routing head inline. That
-  experiment-reproduction path is no longer part of the active service lane, so
-  this task now delegates to `mix trinity.route.demo`.
+  Deprecated compatibility shim for `mix trinity.demo`.
   """
 
   use Mix.Task
 
-  alias Mix.Tasks.Trinity.Route.Demo, as: RouteDemo
+  alias Trinity.Ops.Tasks
 
-  @shortdoc "Runs the active adapted-coordinator route demo"
+  @shortdoc "Deprecated shim for mix trinity.demo"
 
+  @deprecated "Run mix trinity.demo from trinity_framework/trinity_ops"
   @impl Mix.Task
-  def run(args) do
-    RouteDemo.run(args)
-  end
+  def run(argv), do: Tasks.run(:trinity_demo, argv)
 end

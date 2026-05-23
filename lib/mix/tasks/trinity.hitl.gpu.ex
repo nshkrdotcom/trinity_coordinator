@@ -1,34 +1,15 @@
 defmodule Mix.Tasks.Trinity.Hitl.Gpu do
   @moduledoc """
-  HITL gate: prove EXLA can see CUDA and allocate a CUDA tensor.
-
-      XLA_TARGET=cuda12 mix trinity.hitl.gpu
+  Deprecated compatibility shim for `mix trinity.hitl.gpu`.
   """
 
   use Mix.Task
 
-  alias TrinityCoordinator.{HITL, Runtime}
+  alias Trinity.Ops.Tasks
 
-  @shortdoc "HITL GPU/EXLA CUDA visibility check"
+  @shortdoc "Deprecated shim for mix trinity.hitl.gpu"
 
-  @impl true
-  def run(_args) do
-    Mix.Task.run("app.start")
-
-    HITL.banner("TRINITY HITL GPU CHECK")
-    HITL.kv("EXLA target", "configured by runtime")
-
-    platforms = HITL.require_cuda!()
-    HITL.kv("CUDA platform", Map.get(platforms, :cuda))
-
-    Runtime.put_cuda_backend!()
-
-    tensor =
-      Nx.iota({8, 8}, type: :f32)
-      |> Nx.dot(Nx.iota({8, 8}, type: :f32))
-
-    HITL.ensure_shape!(tensor, {8, 8}, "CUDA smoke tensor")
-    HITL.ensure_cuda_tensor!(tensor, "CUDA smoke tensor")
-    HITL.pass("TRINITY HITL GPU CHECK")
-  end
+  @deprecated "Run mix trinity.hitl.gpu from trinity_framework/trinity_ops"
+  @impl Mix.Task
+  def run(argv), do: Tasks.run(:trinity_hitl_gpu, argv)
 end

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-23
+
+### Changed
+
+- Retired the repository to a compatibility shim for
+  `trinity_framework` / `trinity_ops`.
+- Dropped direct runtime/model/provider dependencies from this package.
+- Replaced the public facade and `mix trinity.*` task surface with deprecated
+  delegators for one deprecation window.
+
 ## 2026-05-21
 
 ### Highlights
