@@ -9,6 +9,8 @@
 - Dropped direct runtime/model/provider dependencies from this package.
 - Replaced the public facade and `mix trinity.*` task surface with deprecated
   delegators for one deprecation window.
+- Refreshed the inherited Nx lane to Hex `nx 0.12.1` / `exla 0.12.0`; the
+  temporary post-0.12.0 Nx GitHub pin is no longer required.
 
 ## 2026-05-21
 
@@ -50,10 +52,9 @@ footprint for thin SVD; the Apple-side blocker is now fixed upstream).
 
 ### Changed
 
-- **Dep stack bump.** `nx` pinned to GitHub
-  `elixir-nx/nx@6424c8902380380cd7a8c282b0557d653aead018` (post-v0.12.0
-  main, carries PR #1753 thin-SVD memory fix). `exla` pinned to the
-  same commit (sparse: "exla"). `bumblebee` pinned to
+- **Dep stack bump.** `nx` and `exla` temporarily pinned to the upstream Nx
+  repository after v0.12.0 to carry PR #1753's thin-SVD memory fix.
+  `bumblebee` pinned to
   `elixir-nx/bumblebee@d0774e8ab8c4d5ac60ade95ec8dc9e1f0efd7306`
   (post-v0.7.0 main).
 - **`xla` 0.10.x** is now the bundled version (was 0.9.x). `cuda13` is

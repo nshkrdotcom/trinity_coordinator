@@ -65,11 +65,9 @@ The current development lane assumes:
 
 The resolved Elixir dependency lane currently uses:
 
-- `nx 0.12.0` (pinned to GitHub main commit
-  `6424c8902380380cd7a8c282b0557d653aead018` for
-  [PR #1753 thin SVD memory fix](https://github.com/elixir-nx/nx/pull/1753))
-- `exla 0.12.0` (pinned to the same commit)
-- `axon 0.7.0`
+- `nx 0.12.1` from Hex
+- `exla 0.12.0` from Hex
+- `axon 0.8.1`
 - `bumblebee` pinned to `elixir-nx/bumblebee` commit
   `d0774e8ab8c4d5ac60ade95ec8dc9e1f0efd7306` (post-v0.7.0 main)
 

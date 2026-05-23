@@ -86,12 +86,8 @@ model = TrinityCoordinator.CoordinationHead.build_model(hidden_size, num_agents,
 
 The checked-in dependency lane is:
 
-- `nx` pinned to GitHub `elixir-nx/nx`
-  `6424c8902380380cd7a8c282b0557d653aead018` (post-v0.12.0 main,
-  carries [PR #1753](https://github.com/elixir-nx/nx/pull/1753) thin-SVD
-  memory-footprint fix). When Nx 0.13 lands on Hex, the pin moves to
-  `{:nx, "~> 0.13"}`.
-- `exla` pinned to the same Nx repo at the same commit (sparse: "exla").
+- `nx ~> 0.12`, resolved from Hex as `0.12.1`.
+- `exla ~> 0.12`, resolved from Hex as `0.12.0`.
 - `axon ~> 0.7`
 - `bumblebee` pinned to upstream `elixir-nx/bumblebee`
   `d0774e8ab8c4d5ac60ade95ec8dc9e1f0efd7306` (post-v0.7.0 main).
