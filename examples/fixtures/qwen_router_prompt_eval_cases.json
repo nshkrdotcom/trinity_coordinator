@@ -633,7 +633,7 @@
       "id": "strategic_tradeoff",
       "messages": [
         {
-          "content": "Should the company prioritize rebuilding the legacy monolith or shipping new features? Discuss tradeoffs.",
+          "content": "Should the company prioritize rebuilding the aging monolith or shipping new features? Discuss tradeoffs.",
           "role": "user"
         }
       ],
