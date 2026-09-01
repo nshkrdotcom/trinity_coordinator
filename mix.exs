@@ -1,12 +1,4 @@
-# `build_support/` is not shipped in the published package, so its absence is
-# how this file knows it is running inside a consumer's deps/ rather than in a
-# source checkout. Guard on the file, not on a directory shape: a shape test
-# breaks when the repo is vendored at a different depth or used as a git dep.
-workspace_helper = Path.expand("build_support/dependency_sources.exs", __DIR__)
-
-if File.regular?(workspace_helper) and not Code.ensure_loaded?(DependencySources) do
-  Code.require_file(workspace_helper)
-end
+if bootstrap = System.get_env("MIX_WORKSPACE_OPS_BOOTSTRAP"), do: Code.require_file(bootstrap)
 
 unless Code.ensure_loaded?(XlaTargetValidator) do
   Code.require_file("build_support/xla_target_validator.exs", __DIR__)
@@ -36,8 +28,6 @@ XlaTargetValidator.validate_root_project!(__DIR__)
 
 defmodule TrinityCoordinator.MixProject do
   use Mix.Project
-
-  @workspace_checkout? File.regular?(Path.expand("build_support/dependency_sources.exs", __DIR__))
 
   @version "0.1.0"
 
@@ -122,9 +112,9 @@ defmodule TrinityCoordinator.MixProject do
       # application's deps; the :emlx runtime profile then resolves to
       # the EMLX.Backend at runtime via Code.ensure_loaded?/1. See
       # guides/runtime_profiles.md.
-      workspace_dep(:inference, "~> 0.1.0"),
-      workspace_dep(:agent_session_manager, "~> 0.1.0"),
-      workspace_dep(:gemini_cli_sdk, "~> 0.1.0"),
+      workspace_dep({:inference, "~> 0.1.0"}),
+      workspace_dep({:agent_session_manager, "~> 0.1.0"}),
+      workspace_dep({:gemini_cli_sdk, "~> 0.1.0"}),
       {:req, "~> 0.5"},
       {:hf_hub, "~> 0.3"},
       {:credo, "~> 1.7", only: :dev, runtime: false},
@@ -133,16 +123,10 @@ defmodule TrinityCoordinator.MixProject do
     ]
   end
 
-
-  # In a source checkout the registry decides the source (path first). In a
-  # published package there is no registry, and the requirement stated here is
-  # the whole answer.
-  defp workspace_dep(app, hex_requirement, opts \\ []) do
-    if @workspace_checkout? do
-      apply(DependencySources, :dep, [app, __DIR__, opts])
-    else
-      if opts == [], do: {app, hex_requirement}, else: {app, hex_requirement, opts}
-    end
+  defp workspace_dep(committed) do
+    if function_exported?(MixWorkspaceOpsBootstrap, :dep, 2),
+      do: apply(MixWorkspaceOpsBootstrap, :dep, [committed, __DIR__]),
+      else: committed
   end
 
   defp package do

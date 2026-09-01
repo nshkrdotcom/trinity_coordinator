@@ -32,6 +32,3 @@ priv/plts/*.plt
 /priv/sakana_conductor/
 
 /docs/priv/
-
-# Workspace-local dependency source overrides.
-/.dependency_sources.local.exs

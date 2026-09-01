@@ -7,10 +7,14 @@
 - `docs/priv/` is local/private/generated material and is not packaged.
 
 ## Dependency Sources
-- Dependency source selection is handled by `build_support/dependency_sources.exs` and `build_support/dependency_sources.config.exs`.
-- Local dependency overrides use `.dependency_sources.local.exs`.
-- Dependency source selection must not use environment variables.
-- Keep internal dependency declarations in the manifest instead of adding one-off path/git resolver logic to `mix.exs`.
+- Committed dependency tuples remain ordinary Hex requirements so standalone
+  clones and published consumers work without workspace tooling. Managed
+  development loads the MWO bootstrap and gets eligible source coordinates
+  from Portfolio Registry; operator preferences stay outside this repository.
+- MWO's process-scoped bootstrap pointer is the only dependency-management
+  environment input read by `mix.exs`; publish mode remains Hex-only.
+- Keep internal dependency declarations in `mix.exs`; do not add one-off
+  path/Git resolver logic.
 
 ## Runtime Env
 - Runtime application code under `lib/**` must not call direct OS env APIs such as `System.get_env`, `System.fetch_env`, `System.put_env`, or `System.delete_env`.

@@ -707,27 +707,24 @@ cd trinity_coordinator
 mix deps.get
 ```
 
-Dependency source selection is handled by
-`build_support/dependency_sources.exs` and
-`build_support/dependency_sources.config.exs`. Each sibling dep
-declares `default_order: [:path, :github, :hex]`, so Mix prefers a
-local checkout when present, falls through to GitHub otherwise, and
-to Hex if there's a published package. Use
-`.dependency_sources.local.exs` for one-off local overrides;
-dependency source selection does **not** use environment variables
-(per AGENTS.md).
+The committed internal dependency tuples are ordinary Hex requirements. Plain
+Mix therefore sees normal package declarations and no repository-local source
+policy. For multi-repository development, run Mix through Mix Workspace Ops;
+MWO loads a process-scoped bootstrap, derives eligible local/Git/Hex
+coordinates from Portfolio Registry, and applies operator source preferences
+outside this repository.
 
 How the sibling repos depend on each other:
 
-- `trinity_coordinator` consumes `../agent_session_manager`,
-  `../gemini_cli_sdk`, and `../inference/apps/inference` when present.
+- Under a managed MWO run, `trinity_coordinator` can consume the checked-out
+  `agent_session_manager`, `gemini_cli_sdk`, and `inference` projects.
 - `agent_session_manager` and `gemini_cli_sdk` consume
   `../cli_subprocess_core` when it is present.
 - `cli_subprocess_core` consumes packages inside `../execution_plane`
   when that workspace is present.
 
-Standalone clones fall back to the configured GitHub sources — which
-is why the Quickstart above just works.
+Standalone runs use the committed package requirements. Until every internal
+package is published, the checked-out stack should be run through MWO.
 
 ---
 
