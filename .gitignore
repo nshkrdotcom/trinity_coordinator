@@ -32,3 +32,6 @@ priv/plts/*.plt
 /priv/sakana_conductor/
 
 /docs/priv/
+
+# Machine-local agent configuration must never enter the source repository.
+/.antigravitycli/
