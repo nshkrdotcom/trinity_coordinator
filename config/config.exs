@@ -3,6 +3,7 @@ import Config
 config :exla,
   clients: [
     cuda: [platform: :cuda, preallocate: false, memory_fraction: 0.35],
+    rocm: [platform: :rocm, preallocate: false, memory_fraction: 0.35],
     host: [platform: :host]
   ],
   preferred_clients: [:cuda, :host]

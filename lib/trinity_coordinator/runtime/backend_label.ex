@@ -43,6 +43,7 @@ defmodule TrinityCoordinator.Runtime.BackendLabel do
   @spec from_label(String.t()) ::
           {:ok, backend_spec()} | {:error, {:unknown_backend_label, String.t()}}
   def from_label("EXLA.Backend<cuda" <> _), do: {:ok, {EXLA.Backend, client: :cuda}}
+  def from_label("EXLA.Backend<rocm" <> _), do: {:ok, {EXLA.Backend, client: :rocm}}
   def from_label("EXLA.Backend<host" <> _), do: {:ok, {EXLA.Backend, client: :host}}
   def from_label("Nx.BinaryBackend"), do: {:ok, Nx.BinaryBackend}
   def from_label("EMLX.Backend" <> _), do: {:ok, {EMLX.Backend, device: :gpu}}
