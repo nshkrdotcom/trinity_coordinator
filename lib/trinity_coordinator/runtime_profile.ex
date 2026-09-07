@@ -10,6 +10,7 @@ defmodule TrinityCoordinator.RuntimeProfile do
   ## Built-in profiles
 
     * `:cuda_exla` — canonical production lane. Requires CUDA platform.
+    * `:rocm_exla` - AMD ROCm for AMD hosts.
     * `:host_exla` — CPU EXLA lane for compatibility / non-CUDA hosts.
     * `:binary` — pure Nx binary backend; tiny tests only.
     * `:mock_tiny` — synthetic tiny coordinator with no Qwen load (Phase 5).
@@ -80,6 +81,20 @@ defmodule TrinityCoordinator.RuntimeProfile do
       name: :cuda_exla,
       nx_backend: {EXLA.Backend, client: :cuda},
       require_cuda?: true,
+      qwen_runtime?: true,
+      export_svd?: true,
+      large_svd?: true,
+      artifact_runtime?: true,
+      default_slm_profile: :qwen_coordinator,
+      notes: ["Canonical production lane; requires a CUDA-capable GPU."]
+    }
+  end
+
+  def resolve(:rocm_exla) do
+    %__MODULE__{
+      name: :rocm_exla,
+      nx_backend: {EXLA.Backend, client: :rocm},
+      require_cuda?: false,
       qwen_runtime?: true,
       export_svd?: true,
       large_svd?: true,
@@ -192,7 +207,7 @@ defmodule TrinityCoordinator.RuntimeProfile do
   def resolve(other) do
     raise ArgumentError,
           "unknown runtime profile #{inspect(other)}; " <>
-            "valid built-ins: :cuda_exla, :host_exla, :binary, :mock_tiny, :emlx, :emily; " <>
+            "valid built-ins: :cuda_exla, :rocm_exla, :host_exla, :binary, :mock_tiny, :emlx, :emily; " <>
             "or pass a %TrinityCoordinator.RuntimeProfile{} struct or {:custom, backend, opts}"
   end
 
@@ -200,7 +215,7 @@ defmodule TrinityCoordinator.RuntimeProfile do
   Returns the list of built-in profile names.
   """
   @spec builtin_names() :: [atom()]
-  def builtin_names, do: [:cuda_exla, :host_exla, :binary, :mock_tiny, :emlx, :emily]
+  def builtin_names, do: [:cuda_exla, :rocm_exla, :host_exla, :binary, :mock_tiny, :emlx, :emily]
 
   @doc """
   Sets the current process default Nx backend to the profile's backend.

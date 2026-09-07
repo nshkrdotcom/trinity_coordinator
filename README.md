@@ -44,7 +44,7 @@ CUDA. See [Current Status](#current-status) for the full picture.
 - [Current Status](#current-status)
 - [Project Direction](#project-direction)
 - [System Architecture](#system-architecture)
-- [Runtime Profiles (CUDA, Apple Silicon, CPU)](#runtime-profiles)
+- [Runtime Profiles (CUDA, Apple Silicon, ROCm, CPU)](#runtime-profiles)
 - [Mix Command Reference](#mix-command-reference)
 - [Quality Gates](#quality-gates)
 - [Fresh Clone Setup For Sibling-Repo Development](#fresh-clone-setup-for-sibling-repo-development)
@@ -484,7 +484,7 @@ for the per-module breakdown.
 
 ## Runtime Profiles
 
-`trinity_coordinator` ships six built-in runtime profiles that bundle
+`trinity_coordinator` ships seven built-in runtime profiles that bundle
 backend choice, default coordinator SLM, and validation expectations
 into a single keyword. Pass `--runtime-profile NAME` to any
 router/demo Mix task or example.
@@ -492,6 +492,7 @@ router/demo Mix task or example.
 | Profile | Backend | When to use |
 | --- | --- | --- |
 | `:cuda_exla` *(default)* | `{EXLA.Backend, client: :cuda}` | NVIDIA GPU + CUDA-12 toolchain + Linux. |
+| `:rocm_exla` | `{EXLA.Backend, client: :rocm}` | AMD GPU + ROCm toolchain + Linux |
 | `:host_exla` | `{EXLA.Backend, client: :host}` | EXLA on host CPU (CI sanity checks). |
 | `:binary` | `Nx.BinaryBackend` | Pure-Elixir CPU fallback (slow; for unit tests and quick sanity checks). |
 | `:emlx` | `{EMLX.Backend, device: :gpu}` | Apple Silicon (production-shaped); add `{:emlx, "~> 0.3"}` to your parent app. |
@@ -513,6 +514,12 @@ Apple-Silicon notes:
   the full `m × m` U on the Qwen3-0.6B embedder
   (`m = 151_936`, i.e. ~92 GB U under the old path). Both EMLX and
   EXLA benefit.
+
+AMD ROCm notes:
+
+- **ROCm requires extensive environment support to build correctly.**
+  See [guides/runtime_profiles.md](guides/runtime_profiles.md) for
+  full instructions.
 
 See [guides/runtime_profiles.md](guides/runtime_profiles.md) for the
 full per-profile reference, including per-profile snapshot fixtures

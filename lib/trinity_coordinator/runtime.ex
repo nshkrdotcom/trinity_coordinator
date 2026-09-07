@@ -55,6 +55,7 @@ defmodule TrinityCoordinator.Runtime do
 
     cond do
       String.contains?(inspected, "EXLA.Backend<cuda") -> "EXLA.Backend<cuda:"
+      String.contains?(inspected, "EXLA.Backend<rocm") -> "EXLA.Backend<rocm:"
       String.contains?(inspected, "EXLA.Backend<host") -> "EXLA.Backend<host:"
       String.contains?(inspected, "EXLA.Backend<") -> "EXLA.Backend"
       true -> module_label(backend_struct)
